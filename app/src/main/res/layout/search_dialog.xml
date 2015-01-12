@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <AutoCompleteTextView
+        android:id="@+id/search_dialog_textbox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="find place ..."
+        android:inputType="text" />
+
+    <ListView
+        android:id="@+id/search_dialog_lv_history"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+    </ListView>
+    
+</LinearLayout>

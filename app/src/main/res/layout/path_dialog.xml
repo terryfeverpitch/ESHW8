@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <EditText
+        android:id="@+id/path_dialog_tb_start"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="start..."
+        android:inputType="text" />
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/path_dialog_sp_start" />
+
+    <EditText
+        android:id="@+id/path_dialog_tb_end"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="end..."
+        android:inputType="text" />
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/path_dialog_sp_end" />
+
+</LinearLayout>

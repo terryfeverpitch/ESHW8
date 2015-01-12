@@ -1,0 +1,23 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/action_viewer"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_viewer"/>
+    <item
+        android:id="@+id/action_delete"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_delete"/>
+    <item
+        android:id="@+id/action_selectAll"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_selectAll"/>
+    <item
+        android:id="@+id/action_deseletAll"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_deselectAll"/>
+</menu>

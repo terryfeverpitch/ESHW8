@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Place searches</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <link rel=stylesheet type="text/css" href="style.css">
+    <script src="http://google-maps-utility-library-v3.googlecode.com/svn/trunk/routeboxer/src/RouteBoxer.js" type="text/javascript"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&language=ch"></script>
+    <script>
+            var map;
+            var records = [];
+            var recordsObj = (function() {
+                recordsObj = function(place, marker) {
+                    this.place = place;
+                    this.marker = marker;
+                }
+
+                return recordsObj;
+            })();
+            var homeLocation;
+            var bounds_taiwan = new google.maps.LatLngBounds(
+            	      new google.maps.LatLng(25.351305, 119.875560),
+            	      new google.maps.LatLng(21.879169, 122.171703));
+			var currentPlace;
+			var currentMarker;
+			var boxpolys = null;
+            var directions = null;
+            var routeBoxer = null;
+            var directionService = null;
+            var directionsRenderer = null;
+            var start = null;
+            var end = null;
+            function customZoomControl(controlDiv, map) {
+            	controlDiv.id = "control_container";
+			  
+			  	var btn_zoomin = document.createElement('div');
+			  	btn_zoomin.id = "btn_zoomin";
+			  	btn_zoomin.innerHTML = '<b>+Zo</b>';
+			  	controlDiv.appendChild(btn_zoomin);
+			  	
+			  	var btn_zoomout = document.createElement('div');
+			  	btn_zoomout.id = "btn_zoomout";
+			  	btn_zoomout.innerHTML = '<b>om-</b>';
+			  	controlDiv.appendChild(btn_zoomout);
+				
+			  	btn_zoomin.onclick = function() {
+			  		var zoomLevel = map.getZoom();
+			  		map.setZoom(zoomLevel + 1);
+			  	};
+			  	
+			  	btn_zoomout.onclick = function() {
+			  		var zoomLevel = map.getZoom();
+			  		map.setZoom(zoomLevel - 1);
+			  	};
+            }
+            
+			function HomeControl(controlDiv, map) {
+				// Set CSS styles for the DIV containing the control
+			  	// Setting padding to 5 px will offset the control
+				// from the edge of the map
+				controlDiv.style.padding = '5px';
+			  	// Set CSS for the control border
+			  	var controlUI = document.createElement('div');
+			  	controlUI.style.backgroundColor = 'rgba(255, 255, 255, .3)';
+			  	controlUI.style.borderStyle = 'solid';
+			 	controlUI.style.borderWidth = '2px';
+			  	controlUI.style.cursor = 'pointer';
+			  	controlUI.style.textAlign = 'center';
+			  	controlDiv.appendChild(controlUI);
+			  	// Set CSS for the control interior
+			  	var controlText = document.createElement('div');
+			  	controlText.style.fontSize = '24px';
+			  	controlText.style.paddingLeft = '4px';
+			  	controlText.style.paddingRight = '4px';
+			  	controlText.innerHTML = '<b>Home</b>';
+			  	controlUI.appendChild(controlText);
+			  	// Setup the click event listeners: simply set the map to HOME
+			  	google.maps.event.addDomListener(controlUI, 'click', function() {
+			    	map.setCenter(homeLocation)
+			  	});
+			}
+            function initialize(lat, lng) {
+            	homeLocation = new google.maps.LatLng(lat, lng);
+            	currentPlace = {
+            		geometry: {
+            			location: homeLocation
+            		},
+            		name: "this is my home."
+            	};
+            	
+                map = new google.maps.Map(document.getElementById('map-canvas'), {
+                	disableDefaultUI: true,
+                    center: homeLocation,
+                    zoom: 15
+                });
+                map.fitBounds(bounds_taiwan);
+  
+             	// Create the DIV to hold the control and
+                // call the HomeControl() constructor passing
+                // in this DIV.
+                var homeControlDiv = document.createElement('div');
+                var homeControl = new HomeControl(homeControlDiv, map);
+                homeControlDiv.index = 1;
+                map.controls[google.maps.ControlPosition.TOP_RIGHT].push(homeControlDiv);
+                
+                var zoomControlDiv = document.createElement('div');
+                var zoomControl = new customZoomControl(zoomControlDiv, map);
+                zoomControlDiv.index = 2;
+                map.controls[google.maps.ControlPosition.TOP_LEFT].push(zoomControlDiv);
+                routeBoxer = new RouteBoxer();
+                directionService = new google.maps.DirectionsService();
+                directionsRenderer = new google.maps.DirectionsRenderer({ map: map });
+            }
+            
+            function goSearch(place) {  	
+            	var str = place;
+            	var request = {
+            		bounds: bounds_taiwan,
+            		query: str
+            	};
+                var service = new google.maps.places.PlacesService(map);
+                service.textSearch(request, callback);
+            }
+            function callback(results, status) {
+                if (status == google.maps.places.PlacesServiceStatus.OK) {
+                    var bounds = new google.maps.LatLngBounds();
+                    // currentPlace = results[0];
+                    /*currentPlace = {
+                        geometry: {
+                            location: homeLocation
+                        },
+                        name: "this is my home."
+                    }; */
+                    currentPlace.geometry.location = results[0].geometry.location;
+                    currentPlace.name = results[0].name;
+
+                    map.setCenter(results[0].geometry.location);
+                    map.setZoom(18);
+                }
+            }
+            function createMarker() {
+            	var infowindow = new google.maps.InfoWindow();
+            	infowindow.setContent(currentPlace.name);
+                currentMarker = new google.maps.Marker({
+                    map: map,
+                    position: currentPlace.geometry.location
+                });
+                google.maps.event.addListener(currentMarker, 'click', function() {
+                    infowindow.open(map, this);
+                });
+                map.setCenter(currentPlace.geometry.location);
+            }
+            
+            function focusOn(name, lat, lng) {
+                var loc = new google.maps.LatLng(lat, lng);
+                currentPlace.geometry.location = loc;
+                currentPlace.name = name;
+
+                if(contains(name) == false) {
+                    createMarker();
+                    records.push(new recordsObj(currentPlace, currentMarker));
+                }
+
+            	map.setCenter(loc);
+            }
+
+            function contains(obj) {
+                for(var i = 0; i < records.length; i++) {
+                    if (records[i].name === obj) {
+                        currentMarker = records.marker;
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+    
+            function getPlaceInfo() {
+            	/*if(contains(name) == false) {
+
+                }*/
+                records.push(new recordsObj(currentPlace, currentMarker));
+                window.getJsVar.sendToAndroid("getPlaceInfo");
+            	window.getJsVar.sendPlaceInfo(currentPlace.name, 
+            			currentPlace.geometry.location.lat(), currentPlace.geometry.location.lng());
+            }
+            function setStart(inputStart) {
+                start = inputStart;
+                // window.getJsVar.sendToAndroid(end);
+            }
+            function setEnd(inputEnd) {
+                end = inputEnd;
+                // window.getJsVar.sendToAndroid(end);
+            }
+            function calRoute() {
+                if(start == null || end == null)
+                    return;
+                clearMarkers();
+                clearBoxes();
+                var request = {
+                    origin: start,
+                    destination: end,
+                    travelMode: google.maps.DirectionsTravelMode.DRIVING
+                };
+                directionService.route(request, function(result, status) {
+                    if(status == google.maps.DirectionsStatus.OK) {
+                        directionsRenderer.setDirections(result);
+                        var path = result.routes[0].overview_path;
+                        var Roads = routeBoxer.box(path, distance);
+                        drawRoads(Roads);
+                    }
+                    else {
+                        alert("Directions query failed: " + status);
+                    }
+                });
+            }
+            function drawRoads(Roads) {
+                boxpolys = new Array(Roads.length);
+                for(var i = 0; i < Roads.length; i++) {
+                    boxpolys[i] = new google.maps.Rectangle({
+                        bounds: Roads[i],
+                        fillOpacity: 0,
+                        strokeOpacity: 1.0,
+                        strokeColor: '#000000',
+                        strokeWeight: 1,
+                        map: map
+                    });
+                }
+            }
+
+            function clearMarkers() {
+                for(var i = 0; i < records.length; i++)
+                    records[i].marker.setMap(null);
+            }
+
+            function clearBoxes() {
+                if(boxpolys != null)
+                    for(var i = 0; i < boxpolys.length; i++)
+                        boxpolys[i].setMap(null);
+                boxpolys = null;
+            }
+
+            function clearMap() {
+                clearMarkers();
+                clearBoxes();
+            }
+        </script>
+</head>
+<body>
+<div id="map-canvas"></div>
+</body>
+</html>

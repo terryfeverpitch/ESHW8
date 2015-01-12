@@ -1,0 +1,27 @@
+html, body, #map-canvas {
+	height: 100%;
+    margin: 0px;
+    padding: 0px
+} 
+
+#btn_home {
+	
+}
+
+#control_container {
+	margin: 5px;
+	display: inline-block;
+  	background-color: rgba(255, 255, 255, .3);
+	border: 2px solid;
+	textAlign: center;
+}
+
+#btn_zoomin, #btn_zoomout {
+	background-color: rgba(255, 255, 255, 0);
+	display: inline-block;
+	font-size: 36px
+}
+
+#btn_zoomin:active, #btn_zoomout:active {
+	background-color: rgba(125, 255, 255, .3);
+}
